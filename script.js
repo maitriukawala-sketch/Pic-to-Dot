@@ -12,6 +12,7 @@ const originalImage = document.getElementById('originalImage');
 const dottedCanvas = document.getElementById('dottedCanvas');
 const hiddenCanvas = document.getElementById('hiddenCanvas');
 const downloadBtn = document.getElementById('downloadBtn');
+let currentDownloadUrl = null;
 
 imageInput.addEventListener('change', (e) => {
     if (!cvReady) {
@@ -157,6 +158,17 @@ function processImage(imgElement) {
         }
         poly.delete();
 
+        // --- NEW: Prepare the download link immediately ---
+        dottedCanvas.toBlob((blob) => {
+            // Revoke old URL to save memory
+            if (currentDownloadUrl) URL.revokeObjectURL(currentDownloadUrl);
+
+            currentDownloadUrl = URL.createObjectURL(blob);
+            downloadBtn.href = currentDownloadUrl;
+            downloadBtn.download = "Tracing-Page.png";
+        }, 'image/png');
+        // --------------------------------------------------
+
     } catch (err) {
         console.error("Skeletonization Error:", err);
     } finally {
@@ -173,35 +185,4 @@ function processImage(imgElement) {
     }
 }
 
-// FINAL STABLE DOWNLOAD (High-Res Friendly)
-downloadBtn.onclick = function () {
-    if (!dottedCanvas || dottedCanvas.width === 0) return;
-
-    try {
-        // Blobs are the best for large, high-res images
-        dottedCanvas.toBlob(function (blob) {
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
-
-            link.href = url;
-            link.download = "Tracing-Page.png";
-
-            document.body.appendChild(link);
-            link.click();
-
-            // Keep the URL alive so Windows has time to save the file
-            setTimeout(function () {
-                if (link.parentNode) document.body.removeChild(link);
-                // Large 2-minute delay before cleanup
-                setTimeout(() => window.URL.revokeObjectURL(url), 120000);
-            }, 5000);
-        }, 'image/png');
-
-    } catch (e) {
-        console.error("Blob failed, using DataURL fallback...");
-        const link = document.createElement('a');
-        link.href = dottedCanvas.toDataURL("image/png");
-        link.download = "Tracing-Page.png";
-        link.click();
-    }
-};
+// (The download link is now updated dynamically in processImage using the direct <a> tag)
