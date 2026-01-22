@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kids Trace & Color - Image to Dotted Lines</title>
+    <!-- Kid friendly fonts -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@300;400;600&family=Comic+Neue:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <div class="app-container">
+        <header>
+            <h1>✏️ Trace & Color Maker 🎨</h1>
+            <p>Turn any picture into a fun tracing page!</p>
+        </header>
+
+        <main>
+            <!-- Upload Section -->
+            <div class="upload-section">
+                <input type="file" id="imageInput" accept="image/*" hidden>
+                <label for="imageInput" class="upload-btn">
+                    <span class="icon">📁</span>
+                    <span>Upload Picture</span>
+                </label>
+            </div>
+
+            <!-- Controls (Simple) -->
+            <div class="controls hidden" id="controls">
+                <div class="status-msg" id="statusMsg">Ready to create!</div>
+            </div>
+
+            <!-- Preview Section -->
+            <div class="preview-container hidden" id="previewContainer">
+                <!-- Canvas for processing (hidden) -->
+                <canvas id="hiddenCanvas"></canvas>
+
+                <div class="card">
+                    <h3>Original</h3>
+                    <div class="img-wrapper">
+                        <img id="originalImage" alt="Original Upload">
+                    </div>
+                </div>
+
+                <div class="arrow">➜</div>
+
+                <div class="card">
+                    <h3>Tracing Page</h3>
+                    <div class="img-wrapper">
+                        <canvas id="dottedCanvas"></canvas>
+                    </div>
+                    <button id="downloadBtn" class="download-btn">
+                        <span class="icon">💾</span> Download for Print
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading Indicator -->
+            <div id="loader" class="loader-overlay">
+                <div class="loader-box">
+                    <div class="spinner"></div>
+                    <p>Loading Magic Tools...</p>
+                </div>
+            </div>
+
+        </main>
+
+        <footer>
+            <p>Made for Creativity ✨</p>
+        </footer>
+    </div>
+
+    <!-- OpenCV.js (Local) -->
+    <script async src="opencv.js" onload="onOpenCvReady();" type="text/javascript"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
