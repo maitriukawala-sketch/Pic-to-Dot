@@ -180,24 +180,34 @@ downloadBtn.addEventListener('click', function () {
     }
 
     try {
-        let dataUrl = dottedCanvas.toDataURL("image/png");
-        // Force octet-stream so browser doesn't try to guess or preview it
-        dataUrl = dataUrl.replace(/^data:image\/png/, "data:application/octet-stream");
+        // Use toBlob for better performance and reliability with high-res images
+        dottedCanvas.toBlob(function (blob) {
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
 
-        const link = document.createElement('a');
-        const fileName = "tracing-page-" + Date.now() + ".png";
+            // Simple, safe filename
+            link.download = "TracingPage.png";
+            link.href = url;
 
-        link.href = dataUrl;
-        link.download = fileName;
+            // Append and click
+            document.body.appendChild(link);
+            link.click();
 
-        document.body.appendChild(link);
-        link.click();
-
-        setTimeout(function () {
-            if (link.parentNode) document.body.removeChild(link);
-        }, 1000);
+            // IMPORTANT: We do NOT revoke the URL immediately.
+            // Revoking it too fast causes the download to FAIL or lose its name in Chrome.
+            setTimeout(function () {
+                if (link.parentNode) document.body.removeChild(link);
+                // Wait 60 seconds before revoking to be absolutely safe
+                setTimeout(() => URL.revokeObjectURL(url), 60000);
+            }, 2000);
+        }, 'image/png');
     } catch (err) {
         console.error("Download failed:", err);
-        alert("Error saving image.");
+        // Fallback to simpler method if Blob fails
+        const dataUrl = dottedCanvas.toDataURL("image/png");
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = "TracingPage.png";
+        link.click();
     }
 });
