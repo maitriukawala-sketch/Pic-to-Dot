@@ -180,8 +180,9 @@ downloadBtn.addEventListener('click', function () {
     }
 
     try {
-        // High-quality PNG Data URL (Synchronous is more reliable for 'download' attribute)
-        const dataUrl = dottedCanvas.toDataURL("image/png", 1.0);
+        let dataUrl = dottedCanvas.toDataURL("image/png");
+        // Force octet-stream so browser doesn't try to guess or preview it
+        dataUrl = dataUrl.replace(/^data:image\/png/, "data:application/octet-stream");
 
         const link = document.createElement('a');
         const fileName = "tracing-page-" + Date.now() + ".png";
@@ -189,20 +190,14 @@ downloadBtn.addEventListener('click', function () {
         link.href = dataUrl;
         link.download = fileName;
 
-        // Append, Trigger, and Clean up
         document.body.appendChild(link);
         link.click();
 
         setTimeout(function () {
-            document.body.removeChild(link);
-        }, 300);
-
+            if (link.parentNode) document.body.removeChild(link);
+        }, 1000);
     } catch (err) {
         console.error("Download failed:", err);
-        // Fallback for extremely large canvases
-        const link = document.createElement('a');
-        link.href = dottedCanvas.toDataURL("image/png");
-        link.download = "tracing-page.png";
-        link.click();
+        alert("Error saving image.");
     }
 });
