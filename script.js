@@ -162,7 +162,10 @@ downloadBtn.addEventListener("click", function () {
         document.body.appendChild(a);
         a.click();
 
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
+        // Safety delay for Chrome: don't revoke the URL until the browser starts the download
+        setTimeout(() => {
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+        }, 1000);
     }, "image/png");
 });
