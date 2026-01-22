@@ -174,17 +174,20 @@ function processImage(imgElement) {
 }
 
 downloadBtn.addEventListener('click', () => {
-    // Ensure the background is solid white if it isn't already
-    // (The processImage function already does this, but we're being safe)
-    const dataURL = dottedCanvas.toDataURL('image/png', 1.0);
-    const link = document.createElement('a');
+    // Robust download using Blob (Better for high-res images)
+    dottedCanvas.toBlob((blob) => {
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
 
-    // Create a timestamp for a unique filename
-    const timestamp = new Date().getTime();
-    link.download = `tracing-page-${timestamp}.png`;
+        const timestamp = new Date().getTime();
+        link.download = `tracing-page-${timestamp}.png`;
+        link.href = url;
 
-    link.href = dataURL;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+
+        // Cleanup
+        setTimeout(() => URL.revokeObjectURL(url), 100);
+    }, 'image/png');
 });
