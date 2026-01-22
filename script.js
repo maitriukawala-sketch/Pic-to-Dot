@@ -174,51 +174,32 @@ function processImage(imgElement) {
 }
 
 downloadBtn.addEventListener('click', function () {
-    // 1. Check if canvas has content
     if (!dottedCanvas || dottedCanvas.width === 0) {
-        alert("Please upload and process an image first!");
+        alert("Please upload an image first!");
         return;
     }
 
     try {
-        // 2. Use a high-quality PNG blob
-        dottedCanvas.toBlob(function (blob) {
-            if (!blob) {
-                console.error("Failed to create blob");
-                // Fallback to DataURL if Blob fails
-                const dataUrl = dottedCanvas.toDataURL("image/png");
-                const fbLink = document.createElement('a');
-                fbLink.href = dataUrl;
-                fbLink.download = "tracing-page.png";
-                fbLink.click();
-                return;
-            }
+        // High-quality PNG Data URL (Synchronous is more reliable for 'download' attribute)
+        const dataUrl = dottedCanvas.toDataURL("image/png", 1.0);
 
-            // 3. Create a reliable download link
-            const url = window.URL.createObjectURL(blob);
-            const link = document.createElement('a');
+        const link = document.createElement('a');
+        const fileName = "tracing-page-" + Date.now() + ".png";
 
-            // 4. Force filename with .png extension
-            const fileName = "tracing-page-" + Date.now() + ".png";
+        link.href = dataUrl;
+        link.download = fileName;
 
-            link.style.display = 'none';
-            link.href = url;
-            link.download = fileName;
+        // Append, Trigger, and Clean up
+        document.body.appendChild(link);
+        link.click();
 
-            // 5. Append, Click, and Remove (crucial for some browsers)
-            document.body.appendChild(link);
-            link.click();
+        setTimeout(function () {
+            document.body.removeChild(link);
+        }, 300);
 
-            // 6. Cleanup after a delay to ensure the browser captures the click
-            setTimeout(function () {
-                document.body.removeChild(link);
-                window.URL.revokeObjectURL(url);
-            }, 500);
-
-        }, 'image/png', 1.0);
-    } catch (e) {
-        console.error("Download error:", e);
-        // Final fallback
+    } catch (err) {
+        console.error("Download failed:", err);
+        // Fallback for extremely large canvases
         const link = document.createElement('a');
         link.href = dottedCanvas.toDataURL("image/png");
         link.download = "tracing-page.png";
