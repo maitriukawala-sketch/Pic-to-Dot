@@ -173,30 +173,32 @@ function processImage(imgElement) {
     }
 }
 
-// Ultimate Download Fix: Using primitive onclick and direct DataURL
+// FINAL STABLE DOWNLOAD (High-Res Friendly)
 downloadBtn.onclick = function () {
     if (!dottedCanvas || dottedCanvas.width === 0) return;
 
     try {
-        // We use JPEG here because some OS/Browsers handle high-res JPEG naming better than PNG
-        // The image is black and white, so JPEG at 0.9 quality looks perfect
-        const dataUrl = dottedCanvas.toDataURL("image/jpeg", 0.9);
+        // Blobs are the best for large, high-res images
+        dottedCanvas.toBlob(function (blob) {
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement('a');
 
-        const link = document.createElement('a');
-        link.href = dataUrl;
-        link.download = "Tracing-Page.jpg";
+            link.href = url;
+            link.download = "Tracing-Page.png";
 
-        // Force the download in a way that modern Chrome can't ignore
-        document.body.appendChild(link);
-        link.click();
+            document.body.appendChild(link);
+            link.click();
 
-        // Remove after a while
-        setTimeout(() => {
-            if (link.parentNode) document.body.removeChild(link);
-        }, 5000);
+            // Keep the URL alive so Windows has time to save the file
+            setTimeout(function () {
+                if (link.parentNode) document.body.removeChild(link);
+                // Large 2-minute delay before cleanup
+                setTimeout(() => window.URL.revokeObjectURL(url), 120000);
+            }, 5000);
+        }, 'image/png');
 
     } catch (e) {
-        console.error("Primary download failed, trying PNG...");
+        console.error("Blob failed, using DataURL fallback...");
         const link = document.createElement('a');
         link.href = dottedCanvas.toDataURL("image/png");
         link.download = "Tracing-Page.png";
