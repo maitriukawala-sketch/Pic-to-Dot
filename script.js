@@ -173,41 +173,33 @@ function processImage(imgElement) {
     }
 }
 
-downloadBtn.addEventListener('click', function () {
-    if (!dottedCanvas || dottedCanvas.width === 0) {
-        alert("Please upload an image first!");
-        return;
-    }
+// Ultimate Download Fix: Using primitive onclick and direct DataURL
+downloadBtn.onclick = function () {
+    if (!dottedCanvas || dottedCanvas.width === 0) return;
 
     try {
-        // Use toBlob for better performance and reliability with high-res images
-        dottedCanvas.toBlob(function (blob) {
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
+        // We use JPEG here because some OS/Browsers handle high-res JPEG naming better than PNG
+        // The image is black and white, so JPEG at 0.9 quality looks perfect
+        const dataUrl = dottedCanvas.toDataURL("image/jpeg", 0.9);
 
-            // Simple, safe filename
-            link.download = "TracingPage.png";
-            link.href = url;
-
-            // Append and click
-            document.body.appendChild(link);
-            link.click();
-
-            // IMPORTANT: We do NOT revoke the URL immediately.
-            // Revoking it too fast causes the download to FAIL or lose its name in Chrome.
-            setTimeout(function () {
-                if (link.parentNode) document.body.removeChild(link);
-                // Wait 60 seconds before revoking to be absolutely safe
-                setTimeout(() => URL.revokeObjectURL(url), 60000);
-            }, 2000);
-        }, 'image/png');
-    } catch (err) {
-        console.error("Download failed:", err);
-        // Fallback to simpler method if Blob fails
-        const dataUrl = dottedCanvas.toDataURL("image/png");
         const link = document.createElement('a');
         link.href = dataUrl;
-        link.download = "TracingPage.png";
+        link.download = "Tracing-Page.jpg";
+
+        // Force the download in a way that modern Chrome can't ignore
+        document.body.appendChild(link);
+        link.click();
+
+        // Remove after a while
+        setTimeout(() => {
+            if (link.parentNode) document.body.removeChild(link);
+        }, 5000);
+
+    } catch (e) {
+        console.error("Primary download failed, trying PNG...");
+        const link = document.createElement('a');
+        link.href = dottedCanvas.toDataURL("image/png");
+        link.download = "Tracing-Page.png";
         link.click();
     }
-});
+};
